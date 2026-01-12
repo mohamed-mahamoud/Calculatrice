@@ -67,43 +67,51 @@ def calc_in_list(chaine) :
             list_num.append(int(concat))
             concat = ""
 
+def sort_list(chaine) :
+    global list_num, list_calc
+    sorted_list = []
+    for i in range(len(list_calc)) :
+        op = list_calc[i]
+        #if list_calc[i] in ["*", "/"] and list_calc[i+1] in ["+", "-"] :
 
 
-# def calcul(chaine) :
-#     res = None
-#     for op in list_op : # BOUCLER SUR CHAINE ?
-#         if op in chaine :
-#             a = int(chaine.split(op)[0])
-#             b = int(cut_chaine(chaine.split(op)[1]))
-#             match op :
-#                 case '*' :
-#                     res = multiple(a, b) 
-#                 case '/' :
-#                     res = div(a, b)
-#                 case '+' :
-#                     res = add(a, b)
-#                 case '-' :
-#                     res = sous(a, b)
-#                 case '²' :
-#                     res = carre(a) # 2 nombre min (enlever les fct qui en demande moins)
-#                 #opérations à rajouter
-#         #try :
-#         #    calcul(chaine.split("a")[])
-#     return res
+def add_list_fini(list_index, num) :
+    for index in list_index :
+        list_num[index] = num 
 
 def calcul(chaine) :
     global list_calc, list_num
+    index_num_actu = 0
+    list_index_fini = []
     calc_in_list(chaine)
-    for i in range(len(list_calc)) :
-        match list_calc[i] :
-            case '*' :
-                list_num[i+1] = multiple(list_num[i], list_num[i+1])
-            case '/' :
-                list_num[i+1] = div(list_num[i], list_num[i+1])
-            case '+' :
-                list_num[i+1] = add(list_num[i], list_num[i+1])
-            case '-' :
-                list_num[i+1] = sous(list_num[i], list_num[i+1])
+    print(list_num)
+    for op in list_op :
+        for i in range(len(list_calc)) :
+            if list_calc[i] == op :
+                list_index_fini.append(i)
+                list_index_fini.append(i+1)
+                match list_calc[i] :
+                    case '*' :
+                        #list_num[i+1] = multiple(list_num[i], list_num[i+1])
+                        #list_num[i] = list_num[i+1]
+                        calc = multiple(list_num[i], list_num[i+1])
+                        add_list_fini(list_index_fini, calc)
+                        print(list_num)
+                    case '/' :
+                        #list_num[i+1] = div(list_num[i], list_num[i+1])
+                        calc = div(list_num[i], list_num[i+1])
+                        add_list_fini(list_index_fini, calc)
+                        print(list_num)
+                    case '+' :
+                        #list_num[i+1] = add(list_num[i], list_num[i+1])
+                        calc = add(list_num[i], list_num[i+1])
+                        add_list_fini(list_index_fini, calc)
+                        print(list_num)
+                    case '-' :
+                        #list_num[i+1] = sous(list_num[i], list_num[i+1])
+                        calc = sous(list_num[i], list_num[i+1])
+                        add_list_fini(list_index_fini, calc)
+                        print(list_num)
 
     return list_num[-1]
 
@@ -112,4 +120,4 @@ def calcul(chaine) :
 chaine = input("Entrez l'opération : ")
 print(calcul(chaine))
 #in_list_calc(chaine)
-print(list_num, list_calc)
+print("\n",list_num, list_calc)
