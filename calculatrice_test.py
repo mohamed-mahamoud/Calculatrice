@@ -98,11 +98,84 @@ def input_calcul(calcul=None, pos=0, niveau='input'):
             return float(calcul[d:pos]), pos
         raise ValueError(f"Erreur position {pos}")
 
+#====== Opérations ========#
+def add(a,b):
+    return a + b
 
-n,o=input_calcul()
-print(n, o)
+def sous (a,b):
+    return a-b
 
-    
-                   
-        
-          
+def multiple (a,b):
+    return a*b
+
+def div (a,b):
+    return a/b
+
+def modulo (a,b):
+    return a%b
+
+def div_euclidienne(a,b):
+    return a//b
+
+def puissance(a,b):
+    return a**b
+
+def carre (a):
+    return a**2
+
+def racine_carre (a):
+    return a**0.5
+
+def racine (a,b):
+    return a**(1/b)
+
+def factoriel(a):
+    resultat=0
+    for i in range(a):
+        if i==0:
+            resultat+=a
+        else:
+            resultat*=a-i
+    return resultat
+
+#======== Reconnaisance de calcul =========#
+
+
+def calcul() :
+    n, op = input_calcul()
+    index_num_actu = 0
+    list_index_fini = []
+    print(n)
+    for operateur in op :
+        for i in range(len(op)) :
+            if op[i] == operateur :
+                list_index_fini.append(i)
+                list_index_fini.append(i+1)
+                match op[i] :
+                    case '*' :
+                        calc = multiple(n[i], n[i+1])
+                        for index in list_index_fini :
+                            n[index] = calc
+                        print(n)
+                    case '/' :
+                        calc = div(n[i], n[i+1])
+                        for index in list_index_fini :
+                            n[index] = calc
+                        print(n)
+                    case '+' :
+                        calc = add(n[i], n[i+1])
+                        for index in list_index_fini :
+                            n[index] = calc
+                        print(n)
+                    case '-' :
+                        calc = sous(n[i], n[i+1])
+                        for index in list_index_fini :
+                            n[index] = calc
+                        print(n)
+
+    return n[-1]
+
+
+#======== MAIN ==========#
+print(calcul())
+#in_list_calc(chaine)
