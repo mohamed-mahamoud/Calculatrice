@@ -20,20 +20,35 @@ def input_calcul():
             if i in symboles:
                     globals()[f'symbole_{n}']=i
                     n+=1                    
-        calculeN=re.split(r'(\+|\-|\*|\/|\(|\)|\^)', calcule)
-        n1=n2=r1=None
-        op=[]
-        n=[]
-        for i in calculeN:
-            if i in symboles:
-                op.append(i)
+        tokens = [t for t in re.split(r'(\+|\-|\*|\/|\(|\)|\^)', calcule) if t and t.strip()]
+        
+        # Shunting-yard pour obtenir ordre d'exécution (RPN)
+        pile = []
+        sortie = []
+        prec = {'+':1, '-':1, '*':2, '/':2, '^':3}
+        
+        for t in tokens:
+            if t in prec:
+                while pile and pile[-1] in prec and prec[pile[-1]] >= prec[t]:
+                    sortie.append(pile.pop())
+                pile.append(t)
+            elif t == '(':
+                pile.append(t)
+            elif t == ')':
+                while pile and pile[-1] != '(':
+                    sortie.append(pile.pop())
+                if pile:
+                    pile.pop()
             else:
-                n.append(float(i))
-        for i in range(len(op)):
-            for j in range(len(op)):
-                if val_symbole[op[i]]<val_symbole[op[j]]:
-                    op[i],op[j]=op[j],op[i]
-                    n[j],n[i+1]=n[i+1],n[j]
+                sortie.append(float(t))
+        
+        while pile:
+            sortie.append(pile.pop())
+        
+        # Extraire nombres et opérateurs dans l'ordre de la RPN
+        n = [x for x in sortie if isinstance(x, float)]
+        op = [x for x in sortie if isinstance(x, str)]
+        
         return (n,op)            
                     
 calcul=input_calcul()
