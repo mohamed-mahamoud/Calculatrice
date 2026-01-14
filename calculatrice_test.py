@@ -1,9 +1,4 @@
-import re
-
-
-val_symbole = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
-symboles = ['+', '-', '*', '/', '(', ')', '^', '.', '%', '//', 'V', '!']
-
+#======== Analyseur syntaxique ========#
 def input_calcul(calcul=None, pos=0, niveau='input'):
     # Niveau input : demander le calcul
     if niveau == 'input':
@@ -123,24 +118,18 @@ def multiple (a,b):
 
 def div (a,b):
     if b == 0:
-        print("Erreur : Division par zéro")
-        calcul()
-    else:
-        return a/b
+        raise ValueError("Division par zero")
+    return a/b
 
 def modulo (a,b):
     if b == 0:
-        print("Erreur : Division par zéro")
-        calcul()
-    else:
-        return a%b
+        raise ValueError("Division par zero")
+    return a%b
 
 def div_euclidienne(a,b):
     if b == 0:
-        print("Erreur : Division par zéro")
-        calcul()
-    else:
-        return a//b
+        raise ValueError("Division par zero")
+    return a//b
 
 def puissance(a,b):
     return a**b
@@ -169,53 +158,58 @@ def factoriel(a):
 
 
 def calcul():
-    arbre = input_calcul()
-    
-    def evaluer(a):
-        if isinstance(a, tuple):
-            if len(a) == 2:
-                # Operateur unaire (postfixe)
-                operateur, operande = a
-                op = evaluer(operande)
-                
-                match operateur:
-                    case '!':
-                        calc = factoriel(op)
-                    case _:
-                        calc = op
-                return calc
-            else:
-                # Operateur binaire
-                operateur, gauche, droit = a
-                g = evaluer(gauche)
-                d = evaluer(droit)
-                
-                match operateur:
-                    case '*':
-                        calc = (multiple(g, d))
-                    case '/':
-                        calc = (div(g, d))
-                    case '+':
-                        calc = (add(g, d))
-                    case '-':
-                        calc = (sous(g, d))
-                    case '%': 
-                        calc = (modulo(g, d))
-                    case '//': 
-                        calc = (div_euclidienne(g, d))
-                    case '^':
-                        calc = (puissance(g, d))
-                    case 'V':
-                        calc = (racine(g, d))
-                
-                return calc
-        else:
-            return a
-    
-    resultat = evaluer(arbre)
-    if isinstance(resultat, float) and resultat.is_integer():
-        return int(resultat)
-    return resultat
+    while True:
+        try:
+            arbre = input_calcul()
+            
+            def evaluer(a):
+                if isinstance(a, tuple):
+                    if len(a) == 2:
+                        # Operateur unaire (postfixe)
+                        operateur, operande = a
+                        op = evaluer(operande)
+                        
+                        match operateur:
+                            case '!':
+                                calc = factoriel(op)
+                            case _:
+                                calc = op
+                        return calc
+                    else:
+                        # Operateur binaire
+                        operateur, gauche, droit = a
+                        g = evaluer(gauche)
+                        d = evaluer(droit)
+                        
+                        match operateur:
+                            case '*':
+                                calc = (multiple(g, d))
+                            case '/':
+                                calc = (div(g, d))
+                            case '+':
+                                calc = (add(g, d))
+                            case '-':
+                                calc = (sous(g, d))
+                            case '%': 
+                                calc = (modulo(g, d))
+                            case '//': 
+                                calc = (div_euclidienne(g, d))
+                            case '^':
+                                calc = (puissance(g, d))
+                            case 'V':
+                                calc = (racine(g, d))
+                        
+                        return calc
+                else:
+                    return a
+            
+            resultat = evaluer(arbre)
+            if isinstance(resultat, float) and resultat.is_integer():
+                return int(resultat)
+            return resultat
+        except ValueError as e:
+            print(f"Erreur : {e}")
+            continue
 #======== MAIN ==========#
 
 resultat = calcul()
