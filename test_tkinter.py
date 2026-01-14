@@ -17,24 +17,15 @@ app = tkinter.Tk()
 app.geometry("1280x720")
 app.title("Calculator")
 
-
-#labels
-
-expression=""
-
-#display area
-
-display = tkinter.Entry(app,borderwidth=2,justify="right")
-display.grid(row=0, column=0, columnspan=5,padx=10,pady=20,ipady=10)
-
-display_historique = tkinter.Entry(app, borderwidth=2)
-display_historique.grid(row=0, column=5, columnspan=5, padx=50, pady=20)
-
 #functions
 
 list_op = ["/", "*", "+", "-", "%", "!", "²"]
 list_calc = []
 list_num = []
+
+#labels
+
+expression=""
 
 #====== Opérations ========#
 def add(a,b):
@@ -150,7 +141,9 @@ def calcul(chaine) :
     return list_num[-1]
 
 #======HISTORIQUE======#
+
 calculs=expression
+
 if list_num:
     results = list_num[-1]
 else:
@@ -171,7 +164,8 @@ def historique(calculs,resultats):
 def afficher_historique():
     with open("data.pkl", "rb") as f:
         donnees_chargees = pickle.load(f)
-    print(donnees_chargees) 
+    return donnees_chargees
+print(afficher_historique())
 
 def reset_historique():
     historik=[]
@@ -201,6 +195,20 @@ def clique(button):
 def historique_ (button):
     if button==btn_historique:
 """
+
+
+
+#display area
+
+display = tkinter.Entry(app,borderwidth=2,justify="right")
+display.grid(row=0, column=0, columnspan=5,padx=10,pady=20,ipady=10)
+
+display_historique = tkinter.Text(app, height=5, width=40)
+display_historique.grid(row=0, column=5, columnspan=5, padx=50, pady=20)
+display_historique.insert("end",afficher_historique())
+display_historique.config(state="disabled")
+
+
 
 #buttons
 
