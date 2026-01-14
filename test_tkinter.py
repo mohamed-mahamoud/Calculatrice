@@ -27,6 +27,9 @@ expression=""
 display = tkinter.Entry(app,borderwidth=2,justify="right")
 display.grid(row=0, column=0, columnspan=5,padx=10,pady=20,ipady=10)
 
+display_historique = tkinter.Entry(app, borderwidth=2)
+display_historique.grid(row=0, column=5, columnspan=5, padx=50, pady=20)
+
 #functions
 
 list_op = ["/", "*", "+", "-", "%", "!", "²"]
@@ -168,7 +171,7 @@ def historique(calculs,resultats):
 def afficher_historique():
     with open("data.pkl", "rb") as f:
         donnees_chargees = pickle.load(f)
-    return donnees_chargees
+    print(donnees_chargees) 
 
 def reset_historique():
     historik=[]
@@ -194,20 +197,27 @@ def clique(button):
         expression+=str(button)
         display.delete(0,tkinter.END)
         display.insert(0,expression)
+"""
+def historique_ (button):
+    if button==btn_historique:
+"""
 
 #buttons
 
-row=0
+row=2
 column=0
 
 for button in lst_button:
     cmd=lambda x=button : clique(x)
-    b=tkinter.Button(app, text=button, width=5, height=2, command=cmd)
-    b.grid(row=row, column=column, padx=5, pady=5)
+    btn=tkinter.Button(app, text=button, width=5, height=2, command=cmd)
+    btn.grid(row=row, column=column, pady=5, padx=5)
 
     column+=1
     if column>3:
         column=0
         row+=1
+
+btn_historique = Button (app, text="Reset Historique", command=reset_historique)
+btn_historique.grid(row=row, column=column+5)
 
 app.mainloop()
