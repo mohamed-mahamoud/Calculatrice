@@ -1,57 +1,55 @@
+import pickle
+import keyboard
 #======== Analyseur syntaxique ========#
-def input_calcul(calcul=None, pos=0, niveau='input'):
+def input_calcul():
     # Niveau input : demander le calcul
-    if niveau == 'input':
-        while True:
-            invalide = False
-            calcul = input("Entrez le calcul à effectuer : ")
-            
-            i = 0
-            while i < len(calcul):
-                c = calcul[i]
-                if c.isdigit() or c in '+-()*^.% V!':
-                    i += 1
-                    continue
-                if c == '/':
-                    if i + 1 < len(calcul) and calcul[i + 1] == '/':
-                        i += 2
-                        continue
-                    i += 1  # single '/'
-                    continue
-                if c.isspace():
-                    i += 1
-                    continue
-                print("Caractère non autorisé détecté.")
-                invalide = True
-                break
-            if invalide:
+    global calculs
+    while True:
+        invalide = False
+        calcul = input("Entrez le calcul à effectuer : ")       
+        i = 0
+        while i < len(calcul):
+            c = calcul[i]
+            if c.isdigit() or c in '+-()*^.% V!':
+                i += 1
                 continue
-            
-            if calcul.count('(') != calcul.count(')'):
-                print("Parenthèses non équilibrées.")
+            if c == '/':
+                if i + 1 < len(calcul) and calcul[i + 1] == '/':
+                    i += 2
+                    continue
+                i += 1  
                 continue
-            
-            try:
-                calcul = calcul.replace(' ', '')
-                arbre, _ = input_calcul(calcul, 0, 'add')
-                return arbre
-            except Exception as e:
-                print(f"Erreur dans l'expression : {e}")
+            if c.isspace():
+                i += 1
                 continue
-    
+            print("Caractère non autorisé détecté.")
+            invalide = True
+            break
+        if invalide:
+            continue
+            
+        if calcul.count('(') != calcul.count(')'):
+            print("Parenthèses non équilibrées.")
+            continue
+        calculs=calcul
+            
+        calcul=calcul.replace(' ','')
+        return calcul
+            
+def orgarniser_calcul(calcul, pos=0, niveau='add'):             
     # Niveau add : addition/soustraction
-    elif niveau == 'add':
-        g, pos = input_calcul(calcul, pos, 'mult')
+    if niveau == 'add':
+        g, pos = orgarniser_calcul(calcul, pos, 'mult')
         while pos < len(calcul) and calcul[pos] in '+-':
             o = calcul[pos]
             pos += 1
-            d, pos = input_calcul(calcul, pos, 'mult')
+            d, pos = orgarniser_calcul(calcul, pos, 'mult')
             g = (o, g, d)
         return g, pos
     
     # Niveau mult : multiplication/division
     elif niveau == 'mult':
-        g, pos = input_calcul(calcul, pos, 'puis')
+        g, pos = orgarniser_calcul(calcul, pos, 'puis')
         while pos < len(calcul):
             if calcul.startswith('//', pos):
                 o = '//'
@@ -61,13 +59,13 @@ def input_calcul(calcul=None, pos=0, niveau='input'):
                 pos += 1
             else:
                 break
-            d, pos = input_calcul(calcul, pos, 'puis')
+            d, pos = orgarniser_calcul(calcul, pos, 'puis')
             g = (o, g, d)
         return g, pos
     
     # Niveau postfix : factorielle (postfixe unaire)
     elif niveau == 'postfix':
-        g, pos = input_calcul(calcul, pos, 'base')
+        g, pos = orgarniser_calcul(calcul, pos, 'base')
         while pos < len(calcul) and calcul[pos] == '!':
             g = ('!', g)
             pos += 1
@@ -75,11 +73,11 @@ def input_calcul(calcul=None, pos=0, niveau='input'):
     
     # Niveau puis : puissance
     elif niveau == 'puis':
-        g, pos = input_calcul(calcul, pos, 'postfix')
+        g, pos = orgarniser_calcul(calcul, pos, 'postfix')
         if pos < len(calcul) and calcul[pos] in '^V':
             o = calcul[pos]
             pos += 1
-            d, pos = input_calcul(calcul, pos, 'puis')
+            d, pos = orgarniser_calcul(calcul, pos, 'puis')
             g = (o, g, d)
         return g, pos
     
@@ -87,16 +85,14 @@ def input_calcul(calcul=None, pos=0, niveau='input'):
     elif niveau == 'base':
         if pos < len(calcul) and calcul[pos] == '-':
             pos += 1
-            v, pos = input_calcul(calcul, pos, 'base')
+            v, pos = orgarniser_calcul(calcul, pos, 'base')
             return ('*', -1.0, v), pos
         if pos < len(calcul) and calcul[pos] == '+':
             pos += 1
-            return input_calcul(calcul, pos, 'base')
+            return orgarniser_calcul(calcul, pos, 'base')
         if pos < len(calcul) and calcul[pos] == '(':
             pos += 1
-            v, pos = input_calcul(calcul, pos, 'add')
-            if pos >= len(calcul) or calcul[pos] != ')':
-                raise ValueError("Parenthèse fermante manquante")
+            v, pos = orgarniser_calcul(calcul, pos, 'add')
             pos += 1
             return v, pos
         d = pos
@@ -161,6 +157,9 @@ def calcul():
     while True:
         try:
             arbre = input_calcul()
+            global calculs
+            calculs = arbre
+            arbre, _ = orgarniser_calcul(arbre)
             
             def evaluer(a):
                 if isinstance(a, tuple):
@@ -180,7 +179,6 @@ def calcul():
                         operateur, gauche, droit = a
                         g = evaluer(gauche)
                         d = evaluer(droit)
-                        
                         match operateur:
                             case '*':
                                 calc = (multiple(g, d))
@@ -210,8 +208,41 @@ def calcul():
         except ValueError as e:
             print(f"Erreur : {e}")
             continue
-#======== MAIN ==========#
 
-resultat = calcul()
-print(resultat)
+#======== Historique des calculs ========#
+        
+def historique():
+    global resultat,calculs
+    try:
+        with open("data.pkl", "rb") as f:
+            historik = pickle.load(f)  
+    except FileNotFoundError:
+        historik = [] 
+    historik.append({calculs:resultat})
+    with open("data.pkl", "wb") as f:
+        pickle.dump(historik, f)
+    return "derniers resultats", calculs, resultat
+
+def afficher_historique(event=None):
+    if event is not None:
+        with open("data.pkl", "rb") as f:
+            donnees_chargees = pickle.load(f)
+        return donnees_chargees
+
+def reset_historique():
+    historik=[]
+    with open("data.pkl", "wb") as f:
+        pickle.dump(historik,f)
+        
+#======== MAIN ==========#
+""""
+keyboard.on_release_key('h', afficher_historique)
+while True:
+    calculs=()
+    resultat = calcul()
+    historique()
+    afficher_historique()
+    print(resultat)
+    print(afficher_historique())"""
+
 #in_list_calc(chaine)
