@@ -256,7 +256,10 @@ def historique(calculs,resultats):
     try:
         with open("data.pkl", "rb") as f:
             historik = pickle.load(f)  
-    except FileNotFoundError:
+        if not isinstance(historik, list):#nv
+            print("Erreur : le fichier ne contient pas une liste. Réinitialisation...")#nv
+            historik = []#nv
+    except (FileNotFoundError, EOFError):#modif
         historik = [] 
     historik.append({calculs:resultats})
     with open("data.pkl", "wb") as f:
@@ -267,20 +270,36 @@ def afficher_historique():
     with open("data.pkl", "rb") as f:
         donnees_chargees = pickle.load(f)
     return donnees_chargees
-print(afficher_historique())
 
 def reset_historique():
     historik=[]
     with open("data.pkl", "wb") as f:
         pickle.dump(historik,f)
+    display_historique.config(state="normal")#nv
+    display_historique.delete("1.0", tkinter.END)#nv
+    display_historique.insert("1.0","Historique vide")#nv
+    display_historique.config(state="disabled")#nv
+
+def update_historique():#nv
+    hist = afficher_historique()#nv
+    display_historique.config(state="normal")#nv
+    display_historique.delete("1.0", tkinter.END)#nv
+    
+    if hist:#nv
+        for item in hist:#nv
+            for calcul, resultat in item.items():#nv
+                display_historique.insert("end", f"{calcul} = {resultat}\n")#nv
+    else:#nv
+        display_historique.insert("1.0", "Historique vide")#nv
+
+    display_historique.config(state="disabled")#nv
 
 #========FONCTIONALITÉ DES BOUTONS========#
 
 def clique(button):
     global expression
+    global resultats#nv
     if button=="C":
-        #for j in range(len(list_num)):
-            #list_num.append(" ")
         del list_num[0:len(list_num)]
         expression=""
         display.delete(0,tkinter.END)
@@ -288,21 +307,16 @@ def clique(button):
         resultats=float(calcul())
         display.delete(0,tkinter.END)
         display.insert(0,resultats)
-        expression=resultats
-        print(resultats)
+        historique(expression,resultats)#modif
+        update_historique()#modif
+        expression=str(resultats)#modif
     else:
         expression+=str(button)
         display.delete(0,tkinter.END)
         display.insert(0,expression)
 
 chaine=expression
-
-"""
-def historique_ (button):
-    if button==btn_historique:
-"""
-
-
+resultats=0#modif
 
 #display area
 
@@ -311,10 +325,10 @@ display.grid(row=0, column=0, columnspan=5,padx=10,pady=20,ipady=10)
 
 display_historique = tkinter.Text(app, height=5, width=40)
 display_historique.grid(row=0, column=5, columnspan=5, padx=50, pady=20)
-display_historique.insert("end",afficher_historique())
+display_historique.insert("end",historique(expression,resultats))#modif
 display_historique.config(state="disabled")
 
-
+update_historique()#mdif
 
 #buttons
 
@@ -330,7 +344,7 @@ for button in lst_button:
         column=0
         row+=1
 
-btn_historique = Button (app, text="Reset Historique", command=reset_historique)
+btn_historique = Button (app, text="Reset Historique", command = reset_historique )#modif
 btn_historique.grid(row=row, column=column+5)
 
 app.mainloop()
