@@ -8,18 +8,20 @@ lst_button=[
 
 #import
 
+import re
 import pickle
 import tkinter
 from tkinter import *
 
 #screen
 app = tkinter.Tk()
-app.geometry("1280x720")
+app.geometry("720x500")
 app.title("Calculator")
 
 #functions
 
-list_op = ["/", "*", "+", "-", "%", "!", "²"]
+val_symbole = {'+': 1, '-': 1, '*': 2, '/': 2, '^': 3}
+symboles = ['+', '-', '*', '/', '(', ')', '^', '.', '%', '//', 'V', '!']
 list_calc = []
 list_num = []
 
@@ -38,13 +40,25 @@ def multiple (a,b):
     return a*b
 
 def div (a,b):
-    return a/b
+    if b == 0:
+        print("Erreur : Division par zéro")
+        calcul()
+    else:
+        return a/b
 
 def modulo (a,b):
-    return a%b
+    if b == 0:
+        print("Erreur : Division par zéro")
+        calcul()
+    else:
+        return a%b
 
 def div_euclidienne(a,b):
-    return a//b
+    if b == 0:
+        print("Erreur : Division par zéro")
+        calcul()
+    else:
+        return a//b
 
 def puissance(a,b):
     return a**b
@@ -59,86 +73,175 @@ def racine (a,b):
     return a**(1/b)
 
 def factoriel(a):
-    resultat=0
-    for i in range(a):
-        if i==0:
-            resultat+=a
-        else:
-            resultat*=a-i
+    a = int(a)
+    if a < 0:
+        raise ValueError("Factorielle d'un nombre negatif")
+    if a == 0 or a == 1:
+        return 1
+    resultat = 1
+    for i in range(2, a + 1):
+        resultat *= i
     return resultat
 
 #======== Reconnaisance de calcul =========#
-def cut_chaine(chaine) :
-    for op in list_op :
-        # cut à droite
-        try :
-            chaine = chaine.split(op)[0]
-        finally :
-            chaine = chaine
-    return chaine
 
-def calc_in_list(chaine) :
-    global list_calc, list_num
-    concat = ""
-    for i in range(len(chaine)) :
-        if not chaine[i] in list_op and i == len(chaine)-1 :
-            concat += chaine[i]
-            list_num.append(int(concat))
-            concat = ""
-        elif not chaine[i] in list_op :
-            concat += chaine[i]
-        else :
-            list_calc.append(chaine[i])
-            list_num.append(int(concat))
-            concat = ""
+def input_calcul(calcul=None, pos=0, niveau='input'):
+    # Niveau input : demander le calcul
+    if niveau == 'input':
+        while True:
+            invalide = False
+            calcul = expression
+            
+            i = 0
+            while i < len(calcul):
+                c = calcul[i]
+                if c.isdigit() or c in '+-()*^.% V!':
+                    i += 1
+                    continue
+                if c == '/':
+                    if i + 1 < len(calcul) and calcul[i + 1] == '/':
+                        i += 2
+                        continue
+                    i += 1  # single '/'
+                    continue
+                if c.isspace():
+                    i += 1
+                    continue
+                print("Caractère non autorisé détecté.")
+                invalide = True
+                break
+            if invalide:
+                continue
+            
+            if calcul.count('(') != calcul.count(')'):
+                print("Parenthèses non équilibrées.")
+                continue
+            
+            try:
+                calcul = calcul.replace(' ', '')
+                arbre, _ = input_calcul(calcul, 0, 'add')
+                return arbre
+            except Exception as e:
+                print(f"Erreur dans l'expression : {e}")
+                continue
+    
+    # Niveau add : addition/soustraction
+    elif niveau == 'add':
+        g, pos = input_calcul(calcul, pos, 'mult')
+        while pos < len(calcul) and calcul[pos] in '+-':
+            o = calcul[pos]
+            pos += 1
+            d, pos = input_calcul(calcul, pos, 'mult')
+            g = (o, g, d)
+        return g, pos
+    
+    # Niveau mult : multiplication/division
+    elif niveau == 'mult':
+        g, pos = input_calcul(calcul, pos, 'puis')
+        while pos < len(calcul):
+            if calcul.startswith('//', pos):
+                o = '//'
+                pos += 2
+            elif calcul[pos] in '*/':
+                o = calcul[pos]
+                pos += 1
+            else:
+                break
+            d, pos = input_calcul(calcul, pos, 'puis')
+            g = (o, g, d)
+        return g, pos
+    
+    # Niveau postfix : factorielle (postfixe unaire)
+    elif niveau == 'postfix':
+        g, pos = input_calcul(calcul, pos, 'base')
+        while pos < len(calcul) and calcul[pos] == '!':
+            g = ('!', g)
+            pos += 1
+        return g, pos
+    
+    # Niveau puis : puissance
+    elif niveau == 'puis':
+        g, pos = input_calcul(calcul, pos, 'postfix')
+        if pos < len(calcul) and calcul[pos] in '^V':
+            o = calcul[pos]
+            pos += 1
+            d, pos = input_calcul(calcul, pos, 'puis')
+            g = (o, g, d)
+        return g, pos
+    
+    # Niveau base : nombres et parenthèses
+    elif niveau == 'base':
+        if pos < len(calcul) and calcul[pos] == '-':
+            pos += 1
+            v, pos = input_calcul(calcul, pos, 'base')
+            return ('*', -1.0, v), pos
+        if pos < len(calcul) and calcul[pos] == '+':
+            pos += 1
+            return input_calcul(calcul, pos, 'base')
+        if pos < len(calcul) and calcul[pos] == '(':
+            pos += 1
+            v, pos = input_calcul(calcul, pos, 'add')
+            if pos >= len(calcul) or calcul[pos] != ')':
+                raise ValueError("Parenthèse fermante manquante")
+            pos += 1
+            return v, pos
+        d = pos
+        if pos < len(calcul) and (calcul[pos].isdigit() or calcul[pos] == '.'):
+            while pos < len(calcul) and (calcul[pos].isdigit() or calcul[pos] == '.'):
+                pos += 1
+            return float(calcul[d:pos]), pos
+        raise ValueError(f"Erreur position {pos}")
+    
 
-def sort_list(chaine) :
-    global list_num, list_calc
-    sorted_list = []
-    for i in range(len(list_calc)) :
-        op = list_calc[i]
-        #if list_calc[i] in ["*", "/"] and list_calc[i+1] in ["+", "-"] :
 
-
-def add_list_fini(list_index, num) :
-    for index in list_index :
-        list_num[index] = num 
-
-def calcul(chaine) :
-    global list_calc, list_num
-    index_num_actu = 0
-    list_index_fini = []
-    calc_in_list(chaine)
-    print(list_num)
-    for op in list_op :
-        for i in range(len(list_calc)) :
-            if list_calc[i] == op :
-                list_index_fini.append(i)
-                list_index_fini.append(i+1)
-                match list_calc[i] :
-                    case '*' :
-                        #list_num[i+1] = multiple(list_num[i], list_num[i+1])
-                        #list_num[i] = list_num[i+1]
-                        calc = multiple(list_num[i], list_num[i+1])
-                        add_list_fini(list_index_fini, calc)
-                        print(list_num)
-                    case '/' :
-                        #list_num[i+1] = div(list_num[i], list_num[i+1])
-                        calc = div(list_num[i], list_num[i+1])
-                        add_list_fini(list_index_fini, calc)
-                        print(list_num)
-                    case '+' :
-                        #list_num[i+1] = add(list_num[i], list_num[i+1])
-                        calc = add(list_num[i], list_num[i+1])
-                        add_list_fini(list_index_fini, calc)
-                        print(list_num)
-                    case '-' :
-                        #list_num[i+1] = sous(list_num[i], list_num[i+1])
-                        calc = sous(list_num[i], list_num[i+1])
-                        add_list_fini(list_index_fini, calc)
-                        print(list_num)
-
-    return list_num[-1]
+def calcul():
+    arbre = input_calcul()
+    
+    def evaluer(a):
+        if isinstance(a, tuple):
+            if len(a) == 2:
+                # Operateur unaire (postfixe)
+                operateur, operande = a
+                op = evaluer(operande)
+                
+                match operateur:
+                    case '!':
+                        calc = factoriel(op)
+                    case _:
+                        calc = op
+                return calc
+            else:
+                # Operateur binaire
+                operateur, gauche, droit = a
+                g = evaluer(gauche)
+                d = evaluer(droit)
+                
+                match operateur:
+                    case '*':
+                        calc = (multiple(g, d))
+                    case '/':
+                        calc = (div(g, d))
+                    case '+':
+                        calc = (add(g, d))
+                    case '-':
+                        calc = (sous(g, d))
+                    case '%': 
+                        calc = (modulo(g, d))
+                    case '//': 
+                        calc = (div_euclidienne(g, d))
+                    case '^':
+                        calc = (puissance(g, d))
+                    case 'V':
+                        calc = (racine(g, d))
+                
+                return calc
+        else:
+            return a
+    
+    resultat = evaluer(arbre)
+    if isinstance(resultat, float) and resultat.is_integer():
+        return int(resultat)
+    return resultat
 
 #======HISTORIQUE======#
 
@@ -150,7 +253,6 @@ else:
     print("La liste est vide")
 
 def historique(calculs,resultats):
-    
     try:
         with open("data.pkl", "rb") as f:
             historik = pickle.load(f)  
@@ -172,25 +274,29 @@ def reset_historique():
     with open("data.pkl", "wb") as f:
         pickle.dump(historik,f)
 
+#========FONCTIONALITÉ DES BOUTONS========#
+
 def clique(button):
     global expression
     if button=="C":
+        #for j in range(len(list_num)):
+            #list_num.append(" ")
+        del list_num[0:len(list_num)]
         expression=""
         display.delete(0,tkinter.END)
     elif button=="=":
-        try:
-            resultats=str(calcul(expression))
-            display.delete(0,tkinter.END)
-            display.insert(0,resultats)
-            expression=resultats
-        except:
-            display.delete(0,tkinter.END)
-            display.insert(0,"Erreur")
-            expression=""
+        resultats=float(calcul())
+        display.delete(0,tkinter.END)
+        display.insert(0,resultats)
+        expression=resultats
+        print(resultats)
     else:
         expression+=str(button)
         display.delete(0,tkinter.END)
         display.insert(0,expression)
+
+chaine=expression
+
 """
 def historique_ (button):
     if button==btn_historique:
@@ -219,7 +325,6 @@ for button in lst_button:
     cmd=lambda x=button : clique(x)
     btn=tkinter.Button(app, text=button, width=5, height=2, command=cmd)
     btn.grid(row=row, column=column, pady=5, padx=5)
-
     column+=1
     if column>3:
         column=0
