@@ -14,6 +14,7 @@ lst_button=[
 import pickle
 import tkinter
 from tkinter import *
+import os
 
 #functions
 
@@ -256,9 +257,12 @@ def historique(calculs,resultats):
     return "derniers resultats", calculs, resultats
 
 def afficher_historique():
-    with open("data.pkl", "rb") as f:
-        donnees_chargees = pickle.load(f)
-    return donnees_chargees
+    try:
+        with open("data.pkl", "rb") as f:
+            donnees_chargees = pickle.load(f)
+        return donnees_chargees
+    except (FileNotFoundError, EOFError):
+        return []
     
 def reset_historique():
     historik=[]
@@ -315,7 +319,7 @@ def clique(button):
             expression=""   
     elif button=="<":
         display.delete(0,tkinter.END)
-        expression=expression.rstrip(expression[-1])
+        expression=expression[:-1]
         display.insert(0,expression)
     else:
         expression+=str(button)
@@ -353,10 +357,10 @@ def clav_press (event):
         display.delete(0,tkinter.END)
         expression=""
         display.insert(0,expression)
-    elif touche=="BackSpace":
+    elif touchy=="BackSpace":
         if len(expression)>0:
             display.delete(0,tkinter.END)
-            expression=expression.rstrip(expression[-1])
+            expression=expression[:-1]
             display.insert(0,expression)
         else:
             display.insert(0,"Il n'y a rien a supprimer")
@@ -392,6 +396,10 @@ label_historique = tkinter.Label(app, text="Historique :", font=('Arial', 12, 'b
 label_historique.place(x=375, y=35) 
 display_historique = tkinter.Text(app, height=5, width=40)
 display_historique.place(x=375, y=60)
+if not os.path.exists("data.pkl"):
+    historik = []
+    with open("data.pkl", "wb") as f:
+        pickle.dump(historik, f) 
 if resultats is not None:
     display_historique.insert("end", historique(expression,resultats))
 display_historique.config(state="disabled")
@@ -419,7 +427,7 @@ for button in lst_button:
 
 # Bouton historique (reste dans app)
 btn_historique = tkinter.Button(app, text="Reset Historique", command=reset_historique)
-btn_historique.place(x=600, y=400)
+btn_historique.place(x=600, y=150)
 
 app.bind("<Key>",clav_press)
 
