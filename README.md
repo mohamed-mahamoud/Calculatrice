@@ -4,12 +4,14 @@
 
 Calculatrice graphique développée en Python avec Tkinter. Elle permet d'effectuer des calculs mathématiques avec une interface simple et un historique des opérations.
 
-<img src="screenshot.png" alt="Calculatrice" width="400">
+<img width="400" alt="image" src="https://github.com/user-attachments/assets/73c14033-d330-4315-ab2d-06eadc1a5470" />
+
 
 ## Fonctionnalités
 
 - Interface graphique intuitive avec boutons cliquables
 - Affichage en temps réel des calculs
+- Entrée des calculs par boutons ou clavier
 - Historique automatique des opérations
 - Support des opérations mathématiques avancées
 - Gestion des erreurs (division par zéro, parenthèses mal équilibrées)
@@ -70,6 +72,12 @@ La calculatrice se compose de trois zones :
    - **<** : Supprimer le dernier caractère
    - **=** : Calculer le résultat
    - **Reset Historique** : Vider l'historique
+
+### Raccourcis clavier
+Quelques raccourcis clavier :
+   - **C** : Bouton C de l'interface (effacer l'écran)
+   - **suppr** : bouton Reset Historique de l'interface
+   - **=** : bouton = de l'interface (calculer le résultat)
 
 ### Exemples d'utilisation
 
@@ -157,7 +165,6 @@ Les erreurs sont affichées directement sur l'écran de la calculatrice.
 
 ## Améliorations possibles
 
-- [ ] Ajouter le clavier (entrée au clavier)
 - [ ] Ajouter des fonctions trigonométriques
 - [ ] Exporter l'historique en fichier texte
 - [ ] Thème sombre/clair
@@ -172,7 +179,3 @@ Logann Grange
 Clément Koch
 
 ---
-
-## Raccourcis clavier (à venir)
-
-Pour l'instant, seule l'interface graphique est disponible. Les raccourcis clavier seront ajoutés dans une future version.
