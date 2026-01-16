@@ -326,6 +326,7 @@ def clique(button):
 def clav_press (event):
     global expression
     touche=event.char
+    touchy=event.keysym
     if touche=="=":
         try :
             resultats=(calcul())
@@ -346,6 +347,8 @@ def clav_press (event):
             display.delete(0,tkinter.END)
             display.insert(0,f"Erreur: {e}")
             expression=""
+    elif touchy=="Delete":
+        reset_historique()
     elif touche=="c":
         display.delete(0,tkinter.END)
         expression=""
