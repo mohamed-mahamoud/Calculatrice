@@ -48,5 +48,4 @@ L'interface est divisé en deux partie
 
 * Support de la saisie clavier
 * Ajout d'un mode scientifique avancé
-* Sauvegarde automatique de l'historique
 * Ajout de thèmes (clair / sombre)
