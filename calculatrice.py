@@ -166,54 +166,52 @@ def orgarniser_calcul(calcul, pos=0, niveau='add') :
             return float(calcul[d:pos]), pos
         raise ValueError(f"Erreur position {pos}")
     
-
+def evaluer(a) :
+    if isinstance(a, tuple):
+        if len(a) == 2:
+            # Operateur unaire (postfixe)
+            operateur, operande = a
+            op = evaluer(operande)
+                        
+            match operateur :
+                case '!':
+                    calc = factoriel(op)
+                case 'q':
+                    calc = carre(op)
+                case _:
+                    calc = op
+            return calc
+        else:
+            # Operateur binaire
+            operateur, gauche, droit = a
+            g = evaluer(gauche)
+            d = evaluer(droit)
+            match operateur :
+                case '*' :
+                    calc = (multiple(g, d))
+                case '/' :
+                    calc = (div(g, d))
+                case '+' :
+                    calc = (add(g, d))
+                case '-' :
+                    calc = (sous(g, d))
+                case '%' : 
+                    calc = (modulo(g, d))
+                case '//' : 
+                    calc = (div_euclidienne(g, d))
+                case '^' :
+                    calc = (puissance(g, d))
+                case 'V' :
+                    calc = (racine(g, d))
+                        
+            return calc
+    else:
+        return a
 
 def calcul() :
         try :
             arbre = input_calcul()
             arbre, _ = orgarniser_calcul(arbre)
-            
-            def evaluer(a) :
-                if isinstance(a, tuple):
-                    if len(a) == 2:
-                        # Operateur unaire (postfixe)
-                        operateur, operande = a
-                        op = evaluer(operande)
-                        
-                        match operateur :
-                            case '!':
-                                calc = factoriel(op)
-                            case 'q':
-                                calc = carre(op)
-                            case _:
-                                calc = op
-                        return calc
-                    else:
-                        # Operateur binaire
-                        operateur, gauche, droit = a
-                        g = evaluer(gauche)
-                        d = evaluer(droit)
-                        match operateur :
-                            case '*' :
-                                calc = (multiple(g, d))
-                            case '/' :
-                                calc = (div(g, d))
-                            case '+' :
-                                calc = (add(g, d))
-                            case '-' :
-                                calc = (sous(g, d))
-                            case '%' : 
-                                calc = (modulo(g, d))
-                            case '//' : 
-                                calc = (div_euclidienne(g, d))
-                            case '^' :
-                                calc = (puissance(g, d))
-                            case 'V' :
-                                calc = (racine(g, d))
-                        
-                        return calc
-                else:
-                    return a
             
             resultat = evaluer(arbre)
             if isinstance(resultat, float) and resultat.is_integer():
