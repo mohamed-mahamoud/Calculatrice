@@ -322,6 +322,51 @@ def clique(button):
         display.delete(0,tkinter.END)
         display.insert(0,expression)
 
+#clavier
+def clav_press (event):
+    global expression
+    touche=event.char
+    if touche=="=":
+        try :
+            resultats=(calcul())
+            if not isinstance(resultats, (ValueError, Exception, str)):
+                display.config(font=('Arial', 20))
+                display.delete(0,tkinter.END)
+                display.insert(0,resultats)
+                historique(expression,resultats)
+                update_historique()
+                expression=str(resultats)
+            else:
+                display.config(font=('Arial', 10)) 
+                display.delete(0,tkinter.END)
+                display.insert(0,f"Erreur: {resultats}")
+                expression=""
+        except Exception as e:
+            display.config(font=('Arial', 10)) 
+            display.delete(0,tkinter.END)
+            display.insert(0,f"Erreur: {e}")
+            expression=""
+    elif touche=="c":
+        display.delete(0,tkinter.END)
+        expression=""
+        display.insert(0,expression)
+    elif touche=="BackSpace":
+        if len(expression)>0:
+            display.delete(0,tkinter.END)
+            expression=expression.rstrip(expression[-1])
+            display.insert(0,expression)
+        else:
+            display.insert(0,"Il n'y a rien a supprimer")
+    elif touche in lst_button:
+        expression+=str(touche)
+        display.delete(0,tkinter.END)
+        display.insert(0,expression)
+    else:
+        display.delete(0,tkinter.END)
+        expression="Erreur!"
+        display.insert(0,expression)
+
+
 chaine=expression
 resultats=None
 
@@ -372,5 +417,8 @@ for button in lst_button:
 # Bouton historique (reste dans app)
 btn_historique = tkinter.Button(app, text="Reset Historique", command=reset_historique)
 btn_historique.place(x=600, y=400)
+
+app.bind("<Key>",clav_press)
+
 
 app.mainloop()
