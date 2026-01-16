@@ -4,7 +4,7 @@
 
 Calculatrice graphique développée en Python avec Tkinter. Elle permet d'effectuer des calculs mathématiques avec une interface simple et un historique des opérations.
 
-![Calculatrice](screenshot.png=100x20)
+<img src="screenshot.png" alt="Calculatrice" width="400">
 
 ## Fonctionnalités
 
