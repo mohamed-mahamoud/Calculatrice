@@ -4,7 +4,7 @@ Une calculatrice graphique avec historique, permettant d'effectuer des calculs m
 
 ## Aperçu de l'interface
 
-<img width="897" height="662" alt="image" src="https://github.com/user-attachments/assets/9bdf1512-ff73-47ca-bc3a-077f4a68bff3" />
+<img width="448" height="330" alt="image" src="https://github.com/user-attachments/assets/9bdf1512-ff73-47ca-bc3a-077f4a68bff3" />
 
 
 L'interface est divisé en deux partie 
@@ -39,7 +39,7 @@ L'interface est divisé en deux partie
 * Bouton **=** pour afficher le résultat
 * Saisie des opérations via les boutons de l'interface
 
-## 🛠️ Technologies utilisées
+## Technologies utilisées
 
 * Langage : selon l'implémentation du projet
 * Interface graphique : application avec interface graphique
